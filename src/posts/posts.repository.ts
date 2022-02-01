@@ -8,9 +8,18 @@ import { Post } from './models/post.entity';
 import { Like } from '../likes/models/like.entity';
 import { Comment } from '../comments/models/comment.entity';
 
+export class PageInfo {
+  limit: number;
+  skip: number;
+}
+
 @EntityRepository(Post)
 export class PostsRepository extends Repository<Post> {
-  findPosts(where?: ObjectLiteral, order?: OrderByCondition): Promise<Post[]> {
+  findPosts(
+    where?: ObjectLiteral,
+    order?: OrderByCondition,
+    pagination?: PageInfo,
+  ): Promise<Post[]> {
     let q = this.getQueryWithLikesAndCommentsCount();
 
     if (order) {
@@ -18,10 +27,24 @@ export class PostsRepository extends Repository<Post> {
     }
 
     if (where) {
-      q.where(where);
+      q = q.where(where);
+    }
+
+    if (pagination) {
+      q = q.limit(pagination.limit).skip(pagination.skip);
     }
 
     return q.getRawMany<Post>();
+  }
+
+  postsCount(where?: ObjectLiteral): Promise<number> {
+    let q = this.getQueryWithLikesAndCommentsCount();
+
+    if (where) {
+      q = q.where(where);
+    }
+
+    return q.getCount();
   }
 
   private getQueryWithLikesAndCommentsCount() {

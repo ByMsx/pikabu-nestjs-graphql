@@ -14,6 +14,9 @@ import {
 } from './dto/input/get-posts.input';
 import { UUID } from '../common/types';
 import { MoreThanOrEqual, ObjectLiteral, OrderByCondition } from 'typeorm';
+import { PaginationInfo } from '../common/pagination-info.payload';
+import { PostCategoryInput } from './dto/input/get-posts-category.input';
+import { PaginationInput } from '../common/pagination.input';
 
 @Injectable()
 export class PostsService {
@@ -31,7 +34,7 @@ export class PostsService {
     return plainToClass(PostPayload, instance);
   }
 
-  async getPosts(postsData?: GetPostsInput): Promise<GetPostsPayload> {
+  async getPosts(postsData: GetPostsInput): Promise<GetPostsPayload> {
     const where: ObjectLiteral = {};
     const order: OrderByCondition = {};
 
@@ -47,15 +50,27 @@ export class PostsService {
       where.tags = postsData.filter.tags;
     }
 
-    const items = await this.postsRepository.findPosts(where, order);
-    return { items };
+    const pagination = PostsService.getSkipLimit(postsData);
+
+    const items = await this.postsRepository.findPosts(
+      where,
+      order,
+      pagination,
+    );
+    const pageInfo = await this.getPageInfo(
+      postsData.page,
+      postsData.perPage,
+      where,
+    );
+
+    return { items, pageInfo };
   }
 
-  async getPostsInCategory(category: PostCategory): Promise<GetPostsPayload> {
+  async getPostsInCategory(input: PostCategoryInput): Promise<GetPostsPayload> {
     const where: ObjectLiteral = {};
     const order: OrderByCondition = {};
 
-    switch (category) {
+    switch (input.category) {
       case PostCategory.HOT:
         order.commentsCount = 'DESC';
         break;
@@ -71,9 +86,17 @@ export class PostsService {
     yesterday.setUTCDate(yesterday.getUTCDate() - 1);
     where.createdAt = MoreThanOrEqual(yesterday);
 
-    const items = await this.postsRepository.findPosts(where, order);
+    const pagination = PostsService.getSkipLimit(input);
+    const items = await this.postsRepository.findPosts(
+      where,
+      order,
+      pagination,
+    );
+    const pageInfo = await this.getPageInfo(input.page, input.perPage, where);
+
     return {
       items,
+      pageInfo,
     };
   }
 
@@ -97,5 +120,33 @@ export class PostsService {
         affectedRows: affected,
       };
     } catch (e) {}
+  }
+
+  private async getPageInfo(
+    page: number,
+    perPage: number,
+    where: ObjectLiteral,
+  ): Promise<PaginationInfo> {
+    const totalItems = await this.postsRepository.postsCount(where);
+    const totalPages = Math.ceil(totalItems / perPage);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
+    return {
+      page,
+      perPage,
+      totalPages,
+      totalItems,
+      hasNextPage,
+      hasPreviousPage,
+    };
+  }
+
+  private static getSkipLimit(postsData: PaginationInput) {
+    const { perPage, page } = postsData;
+    const limit = perPage;
+    const skip = (page - 1) * limit;
+
+    return { limit, skip };
   }
 }

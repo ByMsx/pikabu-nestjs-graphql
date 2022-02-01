@@ -1,4 +1,5 @@
 import { Field, InputType, registerEnumType } from '@nestjs/graphql';
+import { PaginationInput } from '../../../common/pagination.input';
 
 export enum PostsSort {
   CREATION_DATE = 'creationDate',
@@ -21,7 +22,7 @@ export class PostsFilter {
 }
 
 @InputType()
-export class GetPostsInput {
+export class GetPostsInput extends PaginationInput {
   @Field(() => PostsFilter, { nullable: true })
   filter?: PostsFilter;
 

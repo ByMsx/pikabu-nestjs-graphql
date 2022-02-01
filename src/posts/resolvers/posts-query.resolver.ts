@@ -2,8 +2,9 @@ import { Args, Query, Resolver } from '@nestjs/graphql';
 import { PostPayload } from '../dto/output/post.payload';
 import { PostsService } from '../posts.service';
 import { GetPostsPayload } from '../dto/output/get-posts.payload';
-import { GetPostsInput, PostCategory } from '../dto/input/get-posts.input';
+import { GetPostsInput } from '../dto/input/get-posts.input';
 import { UUID } from '../../common/types';
+import { PostCategoryInput } from '../dto/input/get-posts-category.input';
 
 @Resolver(() => PostPayload)
 export class PostsQueryResolver {
@@ -11,7 +12,7 @@ export class PostsQueryResolver {
 
   @Query(() => GetPostsPayload, { name: 'posts' })
   async posts(
-    @Args('postsData', { nullable: true }) postsData?: GetPostsInput,
+    @Args('postsData') postsData: GetPostsInput,
   ): Promise<GetPostsPayload> {
     return this.postsService.getPosts(postsData);
   }
@@ -23,8 +24,8 @@ export class PostsQueryResolver {
 
   @Query(() => GetPostsPayload)
   async postsInCategory(
-    @Args('category') category: PostCategory,
+    @Args('postsData') postsData: PostCategoryInput,
   ): Promise<GetPostsPayload> {
-    return this.postsService.getPostsInCategory(category);
+    return this.postsService.getPostsInCategory(postsData);
   }
 }
