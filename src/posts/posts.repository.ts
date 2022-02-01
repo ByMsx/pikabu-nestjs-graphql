@@ -31,7 +31,7 @@ export class PostsRepository extends Repository<Post> {
     }
 
     if (pagination) {
-      q = q.limit(pagination.limit).skip(pagination.skip);
+      q = q.offset(pagination.skip).limit(pagination.limit);
     }
 
     return q.getRawMany<Post>();
