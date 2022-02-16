@@ -4,36 +4,37 @@ import { CreatePostInput } from '../dto/input/create-post.input';
 import { UpdatePostInput } from '../dto/input/update-post.input';
 import { DeletePostsPayload } from '../dto/output/delete-posts.payload';
 import { DeletePostsInput } from '../dto/input/delete-posts.input';
-import { RequestUser, UUID } from '../../common/types';
+import { RequestUser } from '../../common/types';
 import { PostsService } from '../posts.service';
-import { LikesService } from '../../likes/likes.service';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { SetMetadata, UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from '../../auth/guards/gql-auth.guard';
 import { IsPostsOwnerGuard } from '../is-posts-owner.guard';
 import { UserPayload } from '../../auth/dto/user.payload';
+import { CreatePostPayload } from '../dto/output/create-post.payload';
+import { UpdatePostPayload } from '../dto/output/update-post.payload';
+import { LikePostPayload } from '../dto/output/like-post.payload';
+import { LikePostInput } from '../dto/input/like-post.input';
 
 @Resolver(() => PostPayload)
 @UseGuards(GqlAuthGuard)
 export class PostsMutationResolver {
-  constructor(
-    private postsService: PostsService,
-    private likesService: LikesService,
-  ) {}
+  constructor(private postsService: PostsService) {}
 
-  @Mutation(() => PostPayload)
+  @Mutation(() => CreatePostPayload)
   async createPost(
     @Args('newPostData') newPostData: CreatePostInput,
     @CurrentUser() user: UserPayload,
-  ): Promise<PostPayload> {
+  ): Promise<CreatePostPayload> {
     return this.postsService.createPost(newPostData, user.id);
   }
 
-  @Mutation(() => PostPayload)
-  // @UseGuards(IsPostOwnerGuard) // TODO:!
+  @Mutation(() => UpdatePostPayload)
+  @UseGuards(IsPostsOwnerGuard)
+  @SetMetadata('postIdPath', 'updatePostData.id')
   async updatePost(
     @Args('updatePostData') updatePostData: UpdatePostInput,
-  ): Promise<PostPayload> {
+  ): Promise<UpdatePostPayload> {
     return this.postsService.updatePost(updatePostData);
   }
 
@@ -46,21 +47,19 @@ export class PostsMutationResolver {
     return this.postsService.removePost(input.postIds);
   }
 
-  @Mutation(() => PostPayload)
+  @Mutation(() => LikePostPayload)
   async likePost(
-    @Args('postId') postId: UUID,
+    @Args('postData') postData: LikePostInput,
     @CurrentUser() user: RequestUser,
-  ): Promise<PostPayload> {
-    await this.likesService.createLike('post', postId, user.id, 1); // можно и через реляции, но тогда будет дубляж кода
-    return this.postsService.getPost(postId);
+  ): Promise<LikePostPayload> {
+    return this.postsService.likePost(postData, user.id);
   }
 
-  @Mutation(() => PostPayload)
+  @Mutation(() => LikePostPayload)
   async dislikePost(
-    @Args('postId') postId: UUID,
+    @Args('postData') postData: LikePostInput,
     @CurrentUser() user: RequestUser,
-  ): Promise<PostPayload> {
-    await this.likesService.createLike('post', postId, user.id, -1); // можно и через реляции, но тогда будет дубляж кода
-    return this.postsService.getPost(postId);
+  ): Promise<LikePostPayload> {
+    return this.postsService.dislikePost(postData, user.id);
   }
 }

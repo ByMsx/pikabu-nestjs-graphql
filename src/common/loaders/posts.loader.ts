@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OrderedNestDataLoader } from 'nestjs-graphql-dataloader';
-import { UUID } from '../../common/types';
+import { UUID } from '../types';
 import { PostPayload } from '../../posts/dto/output/post.payload';
 import { PostsRepository } from '../../posts/posts.repository';
 

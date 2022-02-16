@@ -5,7 +5,7 @@ import { CommentPayload } from '../../comments/dto/comment.payload';
 import { CommentsRepository } from '../../comments/comments.repository';
 
 @Injectable()
-export class CommentsLoader extends OrderedNestDataLoader<
+export class PostCommentsLoader extends OrderedNestDataLoader<
   UUID,
   { comments: CommentPayload[] }
 > {

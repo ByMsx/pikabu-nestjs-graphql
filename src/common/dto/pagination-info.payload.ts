@@ -1,17 +1,17 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 export class PaginationInfo {
-  @Field(() => Number)
+  @Field(() => Int)
   totalPages: number;
 
-  @Field(() => Number)
+  @Field(() => Int)
   totalItems: number;
 
-  @Field(() => Number)
+  @Field(() => Int)
   page: number;
 
-  @Field(() => Number)
+  @Field(() => Int)
   perPage: number;
 
   @Field(() => Boolean)

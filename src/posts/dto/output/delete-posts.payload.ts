@@ -1,13 +1,14 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { MutationError } from '../../../common/dto/mutation.payload';
 
 @ObjectType()
 export class DeletePostsPayload {
   @Field()
   success: boolean;
 
-  @Field(() => Number, { nullable: true })
+  @Field(() => Int, { nullable: true })
   affectedRows?: number;
 
   @Field(() => String, { nullable: true })
-  error?: string; // TODO: specify type
+  error?: MutationError;
 }

@@ -1,11 +1,12 @@
 import {
   EntityRepository,
+  Like,
   ObjectLiteral,
   OrderByCondition,
   Repository,
 } from 'typeorm';
 import { Post } from './models/post.entity';
-import { Like } from '../likes/models/like.entity';
+import { Like as LikeEntity } from '../likes/models/like.entity';
 import { Comment } from '../comments/models/comment.entity';
 
 export class PageInfo {
@@ -27,6 +28,13 @@ export class PostsRepository extends Repository<Post> {
     }
 
     if (where) {
+      if (where._like) {
+        Object.keys(where._like).forEach((key) => {
+          where[key] = Like(where._like[key]);
+        });
+      }
+
+      delete where._like;
       q = q.where(where);
     }
 
@@ -54,9 +62,13 @@ export class PostsRepository extends Repository<Post> {
       .addSelect('COUNT(likes.id) AS likesCount')
       .addSelect('COUNT(dislikes.id) AS dislikesCount')
       .addSelect('COUNT(comments.id) AS commentsCount')
-      .leftJoin(Like, 'likes', 'likes.postId = posts.id AND likes.rating > 0')
       .leftJoin(
-        Like,
+        LikeEntity,
+        'likes',
+        'likes.postId = posts.id AND likes.rating > 0',
+      )
+      .leftJoin(
+        LikeEntity,
         'dislikes',
         'likes.postId = posts.id AND likes.rating < 0',
       )

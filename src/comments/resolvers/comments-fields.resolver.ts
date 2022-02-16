@@ -1,4 +1,4 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Int, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { CommentPayload } from '../dto/comment.payload';
 import { PostPayload } from '../../posts/dto/output/post.payload';
 import { Loader } from 'nestjs-graphql-dataloader';
@@ -16,7 +16,7 @@ export class CommentsFieldsResolver {
     return postsLoader.load(comment.postId);
   }
 
-  @ResolveField(() => Number)
+  @ResolveField(() => Int)
   async likesCount(
     @Parent() comment: CommentPayload,
     @Loader('CommentLikesCountLoader')
@@ -26,7 +26,7 @@ export class CommentsFieldsResolver {
     return count;
   }
 
-  @ResolveField(() => Number)
+  @ResolveField(() => Int)
   async dislikesCount(
     @Parent() comment: CommentPayload,
     @Loader('CommentDislikesCountLoader')

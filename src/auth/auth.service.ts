@@ -6,6 +6,8 @@ import { SignInPayload } from './dto/sign-in.payload';
 import { JwtService } from '@nestjs/jwt';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { UserPayload } from './dto/user.payload';
+import { SignUpPayload } from './dto/sign-up.payload';
+import { SignUpInput } from './dto/sign-up.input';
 
 @Injectable()
 export class AuthService {
@@ -39,5 +41,9 @@ export class AuthService {
       token,
       user,
     };
+  }
+
+  async signUp(data: SignUpInput): Promise<SignUpPayload> {
+    return null; // TODO
   }
 }

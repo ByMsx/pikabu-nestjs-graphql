@@ -6,7 +6,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UUID } from '../../common/types';
+import { Markdown, UUID } from '../../common/types';
 import { Like } from '../../likes/models/like.entity';
 import { User } from '../../users/user.entity';
 
@@ -19,7 +19,7 @@ export class Post {
   title: string;
 
   @Column({ type: 'text' })
-  text: string;
+  text: Markdown;
 
   @Column({ array: true, type: 'varchar', length: 32 })
   tags: string[];

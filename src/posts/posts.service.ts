@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PostsRepository } from './posts.repository';
 import { Post } from './models/post.entity';
 import { PostPayload } from './dto/output/post.payload';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, plainToInstance } from 'class-transformer';
 import { CreatePostInput } from './dto/input/create-post.input';
 import { UpdatePostInput } from './dto/input/update-post.input';
 import { DeletePostsPayload } from './dto/output/delete-posts.payload';
@@ -14,90 +14,109 @@ import {
 } from './dto/input/get-posts.input';
 import { UUID } from '../common/types';
 import { MoreThanOrEqual, ObjectLiteral, OrderByCondition } from 'typeorm';
-import { PaginationInfo } from '../common/pagination-info.payload';
-import { PostCategoryInput } from './dto/input/get-posts-category.input';
-import { PaginationInput } from '../common/pagination.input';
+import { PaginationService } from '../common/pagination-service.class';
+import { CreatePostPayload } from './dto/output/create-post.payload';
+import { MutationError, MutationStatus } from '../common/dto/mutation.payload';
+import { UpdatePostPayload } from './dto/output/update-post.payload';
+import { LikePostInput } from './dto/input/like-post.input';
+import { LikesRepository } from '../likes/likes.repository';
+import { LikesDelegate } from '../common/likes-delegate.class';
+import { LikePostPayload } from './dto/output/like-post.payload';
 
 @Injectable()
-export class PostsService {
-  constructor(private postsRepository: PostsRepository) {}
+export class PostsService extends PaginationService {
+  private likesDelegate: LikesDelegate<Post, PostPayload, LikePostPayload>;
+
+  constructor(
+    private postsRepository: PostsRepository,
+    private likes: LikesRepository,
+  ) {
+    super();
+
+    this.likesDelegate = new LikesDelegate(likes, postsRepository, PostPayload);
+  }
 
   async createPost(
     post: CreatePostInput,
     authorId: UUID,
-  ): Promise<PostPayload> {
-    const instance = await this.postsRepository.create({
-      ...post,
-      authorId,
-    });
-    await this.postsRepository.save(instance);
-    return plainToClass(PostPayload, instance);
+  ): Promise<CreatePostPayload> {
+    try {
+      const instance = await this.postsRepository.create({
+        ...post,
+        authorId,
+      });
+      await this.postsRepository.save(instance);
+      const record = plainToClass(PostPayload, instance);
+
+      return {
+        record,
+        error: null,
+        recordID: record.id,
+        status: MutationStatus.SUCCESS,
+      };
+    } catch (e) {
+      return {
+        error: new MutationError(e),
+        status: MutationStatus.FAIL,
+      };
+    }
   }
 
-  async getPosts(postsData: GetPostsInput): Promise<GetPostsPayload> {
+  async getPosts(input: GetPostsInput): Promise<GetPostsPayload> {
     const where: ObjectLiteral = {};
     const order: OrderByCondition = {};
 
-    if (postsData?.sort) {
-      if (postsData.sort === PostsSort.CREATION_DATE) {
+    if (input.category) {
+      switch (input.category) {
+        case PostCategory.HOT:
+          order.commentsCount = 'DESC';
+          break;
+        case PostCategory.BEST:
+          order.likesCount = 'DESC';
+          break;
+        case PostCategory.NEWEST:
+          order.createdAt = 'DESC';
+          break;
+      }
+
+      const yesterday = new Date();
+      yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+      where.createdAt = MoreThanOrEqual(yesterday);
+    }
+
+    if (input?.sort) {
+      if (input.sort === PostsSort.CREATION_DATE) {
         order.createdAt = 'DESC';
-      } else if (postsData.sort === PostsSort.LIKES_COUNT) {
+      } else if (input.sort === PostsSort.LIKES_COUNT) {
         order.likesCount = 'DESC';
       }
     }
 
-    if (postsData?.filter?.tags) {
-      where.tags = postsData.filter.tags;
+    if (input?.filter?.tags) {
+      where.tags = input.filter.tags;
     }
 
-    const pagination = PostsService.getSkipLimit(postsData);
+    if (input?.filter?.title) {
+      /* это не костыль, а абстракция от репозитория.
+       * Чтобы отказаться от `_like`, нам нужно вызывать функцию Like из TypeOrm,
+       * а это уже приводит к нарушению абстракции,
+       * т.к. сервис узнает об ORM, а о ней должен знать только репозиторий */
+      where._like = {
+        title: `%${input.filter.title}%`,
+      };
+    }
+
+    const pagination = this.getSkipLimit(input);
 
     const items = await this.postsRepository.findPosts(
       where,
       order,
       pagination,
     );
-    const pageInfo = await this.getPageInfo(
-      postsData.page,
-      postsData.perPage,
-      where,
-    );
+    const count = await this.postsRepository.postsCount(where);
+    const pageInfo = this.getPageInfo(input.page, input.perPage, count);
 
     return { items, pageInfo };
-  }
-
-  async getPostsInCategory(input: PostCategoryInput): Promise<GetPostsPayload> {
-    const where: ObjectLiteral = {};
-    const order: OrderByCondition = {};
-
-    switch (input.category) {
-      case PostCategory.HOT:
-        order.commentsCount = 'DESC';
-        break;
-      case PostCategory.BEST:
-        order.likesCount = 'DESC';
-        break;
-      case PostCategory.NEWEST:
-        order.createdAt = 'DESC';
-        break;
-    }
-
-    const yesterday = new Date();
-    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-    where.createdAt = MoreThanOrEqual(yesterday);
-
-    const pagination = PostsService.getSkipLimit(input);
-    const items = await this.postsRepository.findPosts(
-      where,
-      order,
-      pagination,
-    );
-    const pageInfo = await this.getPageInfo(input.page, input.perPage, where);
-
-    return {
-      items,
-      pageInfo,
-    };
   }
 
   async getPost(id: Post['id']): Promise<PostPayload> {
@@ -105,11 +124,25 @@ export class PostsService {
     return plainToClass(PostPayload, instance);
   }
 
-  async updatePost(updatePostData: UpdatePostInput): Promise<PostPayload> {
-    const instance = await this.postsRepository.findOne(updatePostData.id);
-    Object.assign(instance, updatePostData);
-    await this.postsRepository.save(instance);
-    return instance;
+  async updatePost(
+    updatePostData: UpdatePostInput,
+  ): Promise<UpdatePostPayload> {
+    try {
+      const instance = await this.postsRepository.findOne(updatePostData.id);
+      Object.assign(instance, updatePostData);
+      await this.postsRepository.save(instance);
+      return {
+        recordID: instance.id,
+        record: plainToInstance(PostPayload, instance),
+        status: MutationStatus.SUCCESS,
+        error: null,
+      };
+    } catch (e) {
+      return {
+        error: new MutationError(e.message),
+        status: MutationStatus.FAIL,
+      };
+    }
   }
 
   async removePost(ids: Post['id'][]): Promise<DeletePostsPayload> {
@@ -122,31 +155,11 @@ export class PostsService {
     } catch (e) {}
   }
 
-  private async getPageInfo(
-    page: number,
-    perPage: number,
-    where: ObjectLiteral,
-  ): Promise<PaginationInfo> {
-    const totalItems = await this.postsRepository.postsCount(where);
-    const totalPages = Math.ceil(totalItems / perPage);
-    const hasNextPage = page < totalPages;
-    const hasPreviousPage = page > 1;
-
-    return {
-      page,
-      perPage,
-      totalPages,
-      totalItems,
-      hasNextPage,
-      hasPreviousPage,
-    };
+  likePost(postData: LikePostInput, userId: UUID): Promise<LikePostPayload> {
+    return this.likesDelegate.like(postData.postId, userId);
   }
 
-  private static getSkipLimit(postsData: PaginationInput) {
-    const { perPage, page } = postsData;
-    const limit = perPage;
-    const skip = (page - 1) * limit;
-
-    return { limit, skip };
+  dislikePost(postData: LikePostInput, userId: UUID): Promise<LikePostPayload> {
+    return this.likesDelegate.dislike(postData.postId, userId);
   }
 }

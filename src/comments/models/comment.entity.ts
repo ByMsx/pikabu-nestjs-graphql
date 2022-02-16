@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Post } from '../../posts/models/post.entity';
-import { UUID } from '../../common/types';
+import { Markdown, UUID } from '../../common/types';
 import { User } from '../../users/user.entity';
 
 @Entity()
@@ -14,8 +14,8 @@ export class Comment {
   @PrimaryGeneratedColumn('uuid')
   id: UUID;
 
-  @Column({ length: 1024 })
-  text: string;
+  @Column({ type: 'text' })
+  text: Markdown;
 
   @ManyToOne(() => Post, (post) => post.id, {
     onUpdate: 'CASCADE',

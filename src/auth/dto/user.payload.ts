@@ -7,7 +7,7 @@ export class UserPayload {
   @Field(() => UUIDConstructor)
   id: UUID;
 
-  @Field(() => String)
+  @Field(() => String, {})
   nickname: string;
 
   @Exclude()

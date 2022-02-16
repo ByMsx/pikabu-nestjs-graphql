@@ -1,5 +1,10 @@
-import { Field, ObjectType } from '@nestjs/graphql';
-import { UUID, UUIDConstructor } from '../../../common/types';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
+import {
+  Markdown,
+  MarkdownConstructor,
+  UUID,
+  UUIDConstructor,
+} from '../../../common/types';
 import { CommentPayload } from '../../../comments/dto/comment.payload';
 import { UserPayload } from '../../../auth/dto/user.payload';
 
@@ -11,8 +16,8 @@ export class PostPayload {
   @Field(() => String)
   title: string;
 
-  @Field(() => String)
-  text: string;
+  @Field(() => MarkdownConstructor)
+  text: Markdown;
 
   @Field(() => [String])
   tags: string[];
@@ -23,10 +28,10 @@ export class PostPayload {
   @Field(() => Date)
   createdAt: Date;
 
-  @Field(() => Number)
+  @Field(() => Int)
   likesCount?: number;
 
-  @Field(() => Number)
+  @Field(() => Int)
   dislikesCount?: number;
 
   @Field(() => [CommentPayload])

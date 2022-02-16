@@ -1,11 +1,15 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { UUIDConstructor } from '../../common/types';
+import {
+  Markdown,
+  MarkdownConstructor,
+  UUIDConstructor,
+} from '../../common/types';
 
 @InputType()
 export class CreateCommentInput {
   @Field(() => UUIDConstructor)
   postId: string;
 
-  @Field(() => String)
-  text: string;
+  @Field(() => MarkdownConstructor)
+  text: Markdown;
 }

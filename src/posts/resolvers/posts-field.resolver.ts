@@ -1,6 +1,6 @@
 import DataLoader from 'dataloader';
 import { Loader } from 'nestjs-graphql-dataloader';
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Int, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { PostPayload } from '../dto/output/post.payload';
 import { CommentPayload } from '../../comments/dto/comment.payload';
 import { UserPayload } from '../../auth/dto/user.payload';
@@ -8,7 +8,7 @@ import { UUID } from '../../common/types';
 
 @Resolver(() => PostPayload)
 export class PostsFieldResolver {
-  @ResolveField('likesCount', () => Number)
+  @ResolveField('likesCount', () => Int)
   async likesCount(
     @Parent() post: PostPayload,
     @Loader('PostLikesCountLoader')
@@ -18,7 +18,7 @@ export class PostsFieldResolver {
     return count;
   }
 
-  @ResolveField('dislikesCount', () => Number)
+  @ResolveField('dislikesCount', () => Int)
   async dislikesCount(
     @Parent() post: PostPayload,
     @Loader('PostDislikesCountLoader')
@@ -31,7 +31,7 @@ export class PostsFieldResolver {
   @ResolveField('comments', () => [CommentPayload])
   async comments(
     @Parent() post: PostPayload,
-    @Loader('CommentLoader')
+    @Loader('PostCommentsLoader')
     commentsLoader: DataLoader<UUID, { comments: CommentPayload[] }>,
   ): Promise<CommentPayload[]> {
     const { comments } = await commentsLoader.load(post.id);

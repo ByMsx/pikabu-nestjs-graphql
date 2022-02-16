@@ -1,5 +1,5 @@
 import { Field, InputType, registerEnumType } from '@nestjs/graphql';
-import { PaginationInput } from '../../../common/pagination.input';
+import { PaginationInput } from '../../../common/dto/pagination.input';
 
 export enum PostsSort {
   CREATION_DATE = 'creationDate',
@@ -19,10 +19,16 @@ registerEnumType(PostCategory, { name: 'PostCategory' });
 export class PostsFilter {
   @Field(() => [String], { nullable: true })
   tags?: string[];
+
+  @Field(() => String, { nullable: true })
+  title?: string;
 }
 
 @InputType()
 export class GetPostsInput extends PaginationInput {
+  @Field(() => PostCategory, { nullable: true })
+  category?: PostCategory;
+
   @Field(() => PostsFilter, { nullable: true })
   filter?: PostsFilter;
 

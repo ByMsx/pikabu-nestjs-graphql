@@ -1,44 +1,41 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { CommentPayload } from '../dto/comment.payload';
 import { CreateCommentInput } from '../dto/create-comment.input';
-import { RequestUser, UUID } from '../../common/types';
+import { RequestUser } from '../../common/types';
 import { CommentsService } from '../comments.service';
-import { LikesService } from '../../likes/likes.service';
 import { CurrentUser } from '../../auth/current-user.decorator';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from '../../auth/guards/gql-auth.guard';
+import { CreateCommentPayload } from '../dto/create-comment.payload';
+import { LikeCommentPayload } from '../dto/like-comment.payload';
+import { LikeCommentInput } from '../dto/like-comment.input';
 
 @Resolver(() => CommentPayload)
 @UseGuards(GqlAuthGuard)
 export class CommentsMutationResolver {
-  constructor(
-    private readonly service: CommentsService,
-    private readonly likesService: LikesService,
-  ) {}
+  constructor(private readonly service: CommentsService) {}
 
-  @Mutation(() => CommentPayload)
+  @Mutation(() => CreateCommentPayload)
   async createComment(
     @Args('commentData') commentData: CreateCommentInput,
     @CurrentUser() user: RequestUser,
-  ): Promise<CommentPayload> {
+  ): Promise<CreateCommentPayload> {
     return this.service.createComment(commentData, user.id);
   }
 
-  @Mutation(() => CommentPayload)
+  @Mutation(() => LikeCommentPayload)
   async likeComment(
-    @Args('commentId') commentId: UUID,
+    @Args('commentData') commentData: LikeCommentInput,
     @CurrentUser() user: RequestUser,
-  ): Promise<CommentPayload> {
-    await this.likesService.createLike('comment', commentId, user.id, 1);
-    return this.service.getComment(commentId);
+  ): Promise<LikeCommentPayload> {
+    return this.service.likeComment(commentData, user.id);
   }
 
-  @Mutation(() => CommentPayload)
+  @Mutation(() => LikeCommentPayload)
   async dislikeComment(
-    @Args('commentId') commentId: UUID,
+    @Args('commentData') commentData: LikeCommentInput,
     @CurrentUser() user: RequestUser,
-  ): Promise<CommentPayload> {
-    await this.likesService.createLike('comment', commentId, user.id, -1);
-    return this.service.getComment(commentId);
+  ): Promise<LikeCommentPayload> {
+    return this.service.dislikeComment(commentData, user.id);
   }
 }

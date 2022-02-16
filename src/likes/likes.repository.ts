@@ -4,6 +4,32 @@ import { UUID } from '../common/types';
 
 @EntityRepository(Like)
 export class LikesRepository extends Repository<Like> {
+  async createLike(
+    type: 'post' | 'comment',
+    id: UUID,
+    userId: UUID,
+    rating: number,
+  ): Promise<Like> {
+    const where = {
+      [`${type}Id`]: id,
+      userId,
+    };
+    let instance = await this.findOne({ where });
+    if (instance) {
+      if (instance.rating !== rating) {
+        instance.rating = rating;
+      }
+    } else {
+      instance = this.create({
+        ...where,
+        rating,
+      });
+    }
+
+    await this.save(instance);
+    return instance;
+  }
+
   private async getCountByIds(ids: UUID[], dbField: string, rating = 1) {
     const dbResultField = dbField.toLowerCase();
     const records = await this.createQueryBuilder()

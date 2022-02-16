@@ -4,26 +4,24 @@ import { PostsService } from './posts.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostsRepository } from './posts.repository';
 import { CommentsRepository } from '../comments/comments.repository';
-import { LikesModule } from '../likes/likes.module';
 import { PostLikesCountLoader } from './loaders/post-likes-count.loader';
 import { LikesRepository } from '../likes/likes.repository';
-import { CommentsLoader } from './loaders/comments.loader';
 import { PostsMutationResolver } from './resolvers/posts-mutation.resolver';
 import { PostsQueryResolver } from './resolvers/posts-query.resolver';
 import { UsersRepository } from '../users/users.repository';
 import { CommonModule } from '../common/common.module';
 import { IsPostsOwnerGuard } from './is-posts-owner.guard';
+import { PostCommentsLoader } from './loaders/post-comments.loader';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       PostsRepository,
-      CommentsRepository,
       LikesRepository,
       UsersRepository,
+      CommentsRepository,
     ]),
     CommonModule,
-    LikesModule,
   ],
   providers: [
     IsPostsOwnerGuard,
@@ -34,8 +32,8 @@ import { IsPostsOwnerGuard } from './is-posts-owner.guard';
     PostLikesCountLoader.forLikes(),
     PostLikesCountLoader.forDislikes(),
     {
-      provide: 'CommentLoader',
-      useClass: CommentsLoader,
+      provide: 'PostCommentsLoader',
+      useClass: PostCommentsLoader,
     },
   ],
 })

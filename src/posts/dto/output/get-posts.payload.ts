@@ -1,6 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { PostPayload } from './post.payload';
-import { PaginationInfo } from '../../../common/pagination-info.payload';
+import { PaginationInfo } from '../../../common/dto/pagination-info.payload';
 
 @ObjectType()
 export class GetPostsPayload {
