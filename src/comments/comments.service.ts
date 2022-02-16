@@ -10,9 +10,13 @@ import { LikesRepository } from '../likes/likes.repository';
 import { LikeCommentInput } from './dto/like-comment.input';
 import { LikesDelegate } from '../common/likes-delegate.class';
 import { Comment } from './models/comment.entity';
+import { PaginationService } from '../common/pagination-service.class';
+import { CommentsSort, PostCommentsInput } from './dto/post-comments.input';
+import { PostCommentsPayload } from './dto/post-comments.payload';
+import { OrderByCondition } from 'typeorm';
 
 @Injectable()
-export class CommentsService {
+export class CommentsService extends PaginationService {
   private likesDelegate: LikesDelegate<
     Comment,
     CommentPayload,
@@ -23,11 +27,36 @@ export class CommentsService {
     private repo: CommentsRepository,
     private likes: LikesRepository,
   ) {
+    super();
     this.likesDelegate = new LikesDelegate(likes, repo, CommentPayload);
   }
 
-  async getPostComments(postId: UUID): Promise<CommentPayload[]> {
-    return this.repo.find({ where: { postId } });
+  async getPostComments(data: PostCommentsInput): Promise<PostCommentsPayload> {
+    const pagination = this.getSkipLimit(data);
+
+    const order: OrderByCondition = {};
+    switch (data.sort) {
+      case CommentsSort.CREATED_AT:
+        order.createdAt = 'DESC';
+        break;
+      case CommentsSort.LIKES_COUNT:
+        order.likesCount = 'DESC';
+        break;
+    }
+
+    const items = await this.repo.getPostComments(
+      data.postId,
+      order,
+      pagination,
+    );
+    console.dir(items);
+    const count = await this.repo.countPostComments(data.postId);
+    const pageInfo = this.getPageInfo(data.page, data.perPage, count);
+
+    return {
+      items,
+      pageInfo,
+    };
   }
 
   async createComment(

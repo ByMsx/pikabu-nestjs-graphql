@@ -1,14 +1,17 @@
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { CommentPayload } from '../dto/comment.payload';
-import { UUID } from '../../common/types';
 import { CommentsService } from '../comments.service';
+import { PostCommentsInput } from '../dto/post-comments.input';
+import { PostCommentsPayload } from '../dto/post-comments.payload';
 
 @Resolver(() => CommentPayload)
 export class CommentsQueryResolver {
   constructor(private readonly service: CommentsService) {}
 
-  @Query(() => [CommentPayload])
-  async postComments(@Args('postId') postId: UUID): Promise<CommentPayload[]> {
-    return this.service.getPostComments(postId);
+  @Query(() => PostCommentsPayload)
+  async postComments(
+    @Args('data') data: PostCommentsInput,
+  ): Promise<PostCommentsPayload> {
+    return this.service.getPostComments(data);
   }
 }

@@ -35,4 +35,7 @@ export class Comment {
 
   @Column()
   authorId: UUID;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  createdAt: Date;
 }

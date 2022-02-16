@@ -24,6 +24,9 @@ export class CommentPayload {
   @Field(() => Int)
   dislikesCount?: number;
 
+  @Field(() => Date)
+  createdAt: Date;
+
   postId: UUID; // TODO: may be move out here
   authorId: UUID;
 }
