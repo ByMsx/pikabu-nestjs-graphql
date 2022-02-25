@@ -9,7 +9,7 @@ export class User {
   @Column({ length: 16 })
   nickname: string;
 
-  @Column({ length: 32 })
+  @Column({ length: 64 })
   email: string;
 
   @Column({ length: 32 })

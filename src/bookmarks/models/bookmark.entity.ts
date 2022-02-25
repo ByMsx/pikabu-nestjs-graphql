@@ -2,7 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
-  OneToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../users/user.entity';
@@ -15,21 +15,21 @@ export class Bookmark {
   @PrimaryGeneratedColumn('uuid')
   id: UUID;
 
-  @OneToMany(() => Comment, (comment) => comment.id)
+  @ManyToOne(() => Comment, (comment) => comment.id)
   @JoinColumn()
   comment?: Comment;
 
   @Column({ nullable: true, type: 'uuid' })
   commentId: Comment['id'];
 
-  @OneToMany(() => Post, (post) => post.id)
+  @ManyToOne(() => Post, (post) => post.id)
   @JoinColumn()
   post?: Post;
 
   @Column({ nullable: true, type: 'uuid' })
   postId: Post['id'];
 
-  @OneToMany(() => User, (user) => user.id)
+  @ManyToOne(() => User, (user) => user.id)
   @JoinColumn()
   user?: User;
 
