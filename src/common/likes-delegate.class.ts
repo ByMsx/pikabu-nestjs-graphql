@@ -30,7 +30,6 @@ export class LikesDelegate<
   async createLike(entityId: UUID, userId: UUID, rating: number): Promise<D> {
     try {
       const instance = await this.repo.findOne(entityId);
-      // TODO: should I check entity existence
       await this.likes.createLike('comment', entityId, userId, rating);
       const record = plainToInstance(this.payloadConstructor, instance);
 

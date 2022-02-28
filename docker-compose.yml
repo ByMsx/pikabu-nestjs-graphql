@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: example
+      POSTGRES_DB: example
+    ports:
+      - "0.0.0.0:5432:5432" # for debug purposes
+
+  app:
+    build: .
+    env_file:
+      - app.env
+    links:
+      - db
+    ports:
+      - "0.0.0.0:3000:3000"

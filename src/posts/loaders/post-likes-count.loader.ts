@@ -12,7 +12,6 @@ export class PostLikesCountLoader extends OrderedNestDataLoader<
     private readonly likesRepository: LikesRepository,
     private readonly rating: number,
   ) {
-    // TODO: here is repo, but there is a service in posts.resolver
     super();
   }
 

@@ -66,8 +66,8 @@ export class PostsService extends PaginationService {
     const where: ObjectLiteral = {};
     const order: OrderByCondition = {};
 
-    if (input.category) {
-      switch (input.category) {
+    if (input.filter?.category) {
+      switch (input.filter.category) {
         case PostCategory.HOT:
           order.commentsCount = 'DESC';
           break;

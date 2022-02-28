@@ -27,6 +27,9 @@ export class CommentPayload {
   @Field(() => Date)
   createdAt: Date;
 
-  postId: UUID; // TODO: may be move out here
+  @Field(() => UUIDConstructor)
+  postId: UUID;
+
+  @Field(() => UUIDConstructor)
   authorId: UUID;
 }

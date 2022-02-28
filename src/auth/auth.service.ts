@@ -8,6 +8,7 @@ import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { UserPayload } from './dto/user.payload';
 import { SignUpPayload } from './dto/sign-up.payload';
 import { SignUpInput } from './dto/sign-up.input';
+import { MutationError, MutationStatus } from '../common/dto/mutation.payload';
 
 @Injectable()
 export class AuthService {
@@ -44,6 +45,18 @@ export class AuthService {
   }
 
   async signUp(data: SignUpInput): Promise<SignUpPayload> {
-    return null; // TODO
+    try {
+      const userInstance = await this.users.createOne(data);
+      return {
+        record: userInstance,
+        recordID: userInstance.id,
+        status: MutationStatus.SUCCESS,
+      };
+    } catch (e) {
+      return {
+        error: new MutationError(e),
+        status: MutationStatus.FAIL,
+      };
+    }
   }
 }

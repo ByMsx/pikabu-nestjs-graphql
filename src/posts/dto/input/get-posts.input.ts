@@ -22,13 +22,13 @@ export class PostsFilter {
 
   @Field(() => String, { nullable: true })
   title?: string;
+
+  @Field(() => PostCategory, { nullable: true })
+  category?: PostCategory;
 }
 
 @InputType()
 export class GetPostsInput extends PaginationInput {
-  @Field(() => PostCategory, { nullable: true })
-  category?: PostCategory;
-
   @Field(() => PostsFilter, { nullable: true })
   filter?: PostsFilter;
 
