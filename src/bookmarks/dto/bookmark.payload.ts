@@ -14,20 +14,20 @@ export class BookmarkBase {
 
 @ObjectType()
 export class CommentBookmarkPayload extends BookmarkBase {
-  @Field(() => CommentPayload, { nullable: true })
-  comment?: CommentPayload;
+  @Field(() => CommentPayload)
+  comment: CommentPayload;
 
-  @Field(() => UUIDConstructor, { nullable: true })
-  commentId?: UUID;
+  @Field(() => UUIDConstructor)
+  commentId: UUID;
 }
 
 @ObjectType()
 export class PostBookmarkPayload extends BookmarkBase {
-  @Field(() => PostPayload, { nullable: true })
-  post?: PostPayload;
+  @Field(() => PostPayload)
+  post: PostPayload;
 
-  @Field(() => UUIDConstructor, { nullable: true })
-  postId?: UUID;
+  @Field(() => UUIDConstructor)
+  postId: UUID;
 }
 
 export const BookmarkPayload = createUnionType({

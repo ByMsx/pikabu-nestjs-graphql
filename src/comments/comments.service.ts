@@ -14,6 +14,7 @@ import { PaginationService } from '../common/pagination-service.class';
 import { CommentsSort, PostCommentsInput } from './dto/post-comments.input';
 import { PostCommentsPayload } from './dto/post-comments.payload';
 import { OrderByCondition } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class CommentsService extends PaginationService {
@@ -49,12 +50,11 @@ export class CommentsService extends PaginationService {
       order,
       pagination,
     );
-    console.dir(items);
     const count = await this.repo.countPostComments(data.postId);
     const pageInfo = this.getPageInfo(data.page, data.perPage, count);
 
     return {
-      items,
+      items: plainToInstance(CommentPayload, items),
       pageInfo,
     };
   }
@@ -70,7 +70,7 @@ export class CommentsService extends PaginationService {
       });
       await this.repo.save(record);
       return {
-        record,
+        record: plainToInstance(CommentPayload, record),
         recordID: record.id,
         status: MutationStatus.SUCCESS,
         error: null,

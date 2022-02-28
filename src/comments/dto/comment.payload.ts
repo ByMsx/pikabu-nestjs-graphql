@@ -15,8 +15,8 @@ export class CommentPayload {
   @Field(() => MarkdownConstructor)
   text: Markdown;
 
-  @Field(() => PostPayload, { nullable: true })
-  post?: PostPayload;
+  @Field(() => PostPayload)
+  post: PostPayload;
 
   @Field(() => Int)
   likesCount?: number;

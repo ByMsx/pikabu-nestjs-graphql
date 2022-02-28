@@ -4,6 +4,7 @@ import { UUID } from '../common/types';
 import { CommentPayload } from './dto/comment.payload';
 import { PageInfo } from '../posts/posts.repository';
 import { Like as LikeEntity } from '../likes/models/like.entity';
+import { plainToInstance } from 'class-transformer';
 
 @EntityRepository(Comment)
 export class CommentsRepository extends Repository<Comment> {
@@ -18,9 +19,11 @@ export class CommentsRepository extends Repository<Comment> {
     const result: Record<UUID, CommentPayload[]> = {};
     postsIds.forEach((id) => (result[id] ??= []));
 
-    comments.forEach((comment) => {
-      result[comment.postId].push(comment);
-    });
+    comments
+      .map((comment) => plainToInstance(CommentPayload, comment))
+      .forEach((comment) => {
+        result[comment.postId].push(comment);
+      });
 
     return Object.keys(result).map((key) => ({
       postId: key,

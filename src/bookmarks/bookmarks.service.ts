@@ -48,7 +48,10 @@ export class BookmarksService extends PaginationService {
         const cl = item.commentId
           ? CommentBookmarkPayload
           : PostBookmarkPayload;
-        return plainToInstance(cl, item);
+        return plainToInstance<
+          CommentBookmarkPayload | PostBookmarkPayload,
+          Bookmark
+        >(cl, item);
       }),
     };
   }
