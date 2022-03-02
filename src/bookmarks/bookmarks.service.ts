@@ -33,9 +33,9 @@ export class BookmarksService extends PaginationService {
 
     if (input.type) {
       if (input.type === BookmarkType.COMMENT) {
-        options.where.commentId = null;
-      } else if (input.type === BookmarkType.POST) {
         options.where.postId = null;
+      } else if (input.type === BookmarkType.POST) {
+        options.where.commentId = null;
       }
     }
 
@@ -70,8 +70,8 @@ export class BookmarksService extends PaginationService {
       const record = plainToInstance(CommentBookmarkPayload, instance);
       return {
         recordID: record.id,
-        record,
         status: MutationStatus.SUCCESS,
+        record,
       };
     } catch (e) {
       return {

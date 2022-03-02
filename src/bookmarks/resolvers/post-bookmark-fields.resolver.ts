@@ -12,7 +12,6 @@ export class PostBookmarkFieldsResolver {
     @Parent() postBookmark: PostBookmarkPayload,
     @Loader('PostsLoader') postsLoader: DataLoader<UUID, PostPayload>,
   ): Promise<PostPayload> {
-    if (!postBookmark.postId) return null;
     return postsLoader.load(postBookmark.postId);
   }
 }

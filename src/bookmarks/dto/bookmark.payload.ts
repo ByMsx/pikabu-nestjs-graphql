@@ -1,10 +1,16 @@
-import { createUnionType, Field, ObjectType } from '@nestjs/graphql';
+import {
+  createUnionType,
+  Field,
+  InterfaceType,
+  ObjectType,
+} from '@nestjs/graphql';
 import { CommentPayload } from '../../comments/dto/comment.payload';
 import { UserPayload } from '../../auth/dto/user.payload';
 import { PostPayload } from '../../posts/dto/output/post.payload';
 import { UUID, UUIDConstructor } from '../../common/types';
 
-export class BookmarkBase {
+@InterfaceType()
+export abstract class BookmarkBase {
   @Field(() => UUIDConstructor)
   id: UUID;
 
@@ -12,7 +18,9 @@ export class BookmarkBase {
   user?: UserPayload;
 }
 
-@ObjectType()
+@ObjectType({
+  implements: [BookmarkBase],
+})
 export class CommentBookmarkPayload extends BookmarkBase {
   @Field(() => CommentPayload)
   comment: CommentPayload;
@@ -21,7 +29,9 @@ export class CommentBookmarkPayload extends BookmarkBase {
   commentId: UUID;
 }
 
-@ObjectType()
+@ObjectType({
+  implements: [BookmarkBase],
+})
 export class PostBookmarkPayload extends BookmarkBase {
   @Field(() => PostPayload)
   post: PostPayload;

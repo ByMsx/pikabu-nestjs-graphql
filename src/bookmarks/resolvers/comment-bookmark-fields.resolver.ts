@@ -12,7 +12,6 @@ export class CommentBookmarkFieldsResolver {
     @Parent() commentBookmark: CommentBookmarkPayload,
     @Loader('CommentsLoader') commentsLoader: DataLoader<UUID, CommentPayload>,
   ): Promise<CommentPayload> {
-    if (!commentBookmark.commentId) return null;
     return commentsLoader.load(commentBookmark.commentId);
   }
 }

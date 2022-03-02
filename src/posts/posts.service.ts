@@ -22,6 +22,7 @@ import { LikePostInput } from './dto/input/like-post.input';
 import { LikesRepository } from '../likes/likes.repository';
 import { LikesDelegate } from '../common/likes-delegate.class';
 import { LikePostPayload } from './dto/output/like-post.payload';
+import { GetPostInput } from './dto/input/get-post.input';
 
 @Injectable()
 export class PostsService extends PaginationService {
@@ -119,8 +120,8 @@ export class PostsService extends PaginationService {
     return { items, pageInfo };
   }
 
-  async getPost(id: Post['id']): Promise<PostPayload> {
-    const instance = await this.postsRepository.findOne(id);
+  async getPost(postInput: GetPostInput): Promise<PostPayload> {
+    const instance = await this.postsRepository.findOne(postInput.id);
     return plainToClass(PostPayload, instance);
   }
 

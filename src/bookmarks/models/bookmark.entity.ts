@@ -4,6 +4,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 import { User } from '../../users/user.entity';
 import { Comment } from '../../comments/models/comment.entity';
@@ -11,6 +12,8 @@ import { Post } from '../../posts/models/post.entity';
 import { UUID } from '../../common/types';
 
 @Entity()
+@Unique(['commentId', 'userId'])
+@Unique(['postId', 'userId'])
 export class Bookmark {
   @PrimaryGeneratedColumn('uuid')
   id: UUID;
